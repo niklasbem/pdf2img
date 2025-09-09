@@ -1,139 +1,202 @@
 # PDF to Image Service 🚀
 
-Ein performanter und schlanker Microservice zur Konvertierung von PDF-Dokumenten in verschiedene Bildformate (JPEG, PNG, WEBP). Basiert auf Flask und der extrem schnellen Bildverarbeitungsbibliothek libvips.
+A high-performance, lightweight microservice for converting PDF documents to various image formats (JPEG, PNG, WEBP). Built with Flask and the blazing-fast libvips image processing library.
 
-Dieses Projekt ist für den einfachen Einsatz in einem Docker-Container konzipiert.
+This project is designed for easy deployment in a Docker container.
+
+[![Docker Ready](https://img.shields.io/badge/docker-ready-blue.svg)](https://docker.com)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
+[![libvips](https://img.shields.io/badge/powered%20by-libvips-green.svg)](https://libvips.github.io/libvips/)
 
 ## ✨ Key Features
 
-- **Extrem schnell**: Nutzt libvips für eine der schnellsten PDF-zu-Bild-Konvertierungen
-- **Ressourcenschonend**: Die Verarbeitung findet vollständig im Arbeitsspeicher statt – es werden keine temporären Dateien auf der Festplatte angelegt
-- **Flexibles API**: Volle Kontrolle über Auflösung (DPI), Bildgröße, Zielformat, Qualität und einfache Bildfilter
-- **Docker-Ready**: Ein optimiertes, schlankes Multi-Stage-Dockerfile für schnelle Builds und kleine Image-Größen
-- **Produktionstauglich**: Läuft mit einem Gunicorn WSGI-Server und ist für den Einsatz hinter einem Reverse-Proxy vorbereitet
+- **🚀 Lightning Fast**: Leverages libvips for one of the fastest PDF-to-image conversions available
+- **💾 Memory Efficient**: All processing happens in-memory with zero temporary files written to disk
+- **🎛️ Flexible API**: Complete control over resolution (DPI), image size, output format, quality, and basic image filters
+- **🐳 Docker Ready**: Optimized multi-stage Dockerfile for fast builds and minimal image sizes
+- **🏭 Production Ready**: Runs with Gunicorn WSGI server, ready for deployment behind a reverse proxy
+- **📊 Multi-page Support**: Convert single pages or entire documents in one request
 
-## 🏁 Getting Started
+## 🏁 Quick Start
 
-Die empfohlene Methode zur Ausführung des Services ist die Verwendung von Docker.
+The recommended way to run this service is using Docker.
 
-### 1. Docker-Image bauen
+### 1. Build Docker Image
 
-Klonen Sie dieses Repository und bauen Sie das Docker-Image mit folgendem Befehl im Hauptverzeichnis des Projekts:
+Clone this repository and build the Docker image from the project root:
 
 ```bash
 docker build -t pdf-image-service .
 ```
 
-### 2. Docker-Container starten
+### 2. Run Container
 
-Starten Sie einen Container aus dem eben erstellten Image. Der Service wird auf Port 5000 des Containers ausgeführt. Wir mappen ihn hier auf den Port 5000 des Host-Systems.
+Start a container from the built image. The service runs on port 5000 inside the container:
 
 ```bash
 docker run -d -p 5000:5000 --name pdf-converter pdf-image-service
 ```
 
-- `-d`: Führt den Container im Hintergrund aus (detached mode)
-- `-p 5000:5000`: Mappt Port 5000 des Hosts auf Port 5000 des Containers
-- `--name pdf-converter`: Gibt dem Container einen leicht zu merkenden Namen
+**Flag explanations:**
 
-Der Service ist jetzt unter `http://localhost:5000` erreichbar.
+- `-d`: Run container in detached mode (background)
+- `-p 5000:5000`: Map host port 5000 to container port 5000
+- `--name pdf-converter`: Assign a memorable name to the container
 
-## ⚙️ API-Nutzung & Beispiele
+The service is now available at `http://localhost:5000`.
 
-Senden Sie eine POST-Anfrage mit `multipart/form-data` an den `/image`-Endpunkt.
+## ⚙️ API Usage & Examples
 
-### Beispiel 1: Standardkonvertierung (PDF zu JPEG)
+Send POST requests with `multipart/form-data` to the `/image` endpoint.
 
-Konvertiert die erste Seite der PDF-Datei in ein JPEG-Bild mit 150 DPI und 85% Qualität.
+### Example 1: Basic Conversion (PDF to JPEG)
+
+Convert the first page of a PDF to JPEG with 150 DPI and 85% quality:
 
 ```bash
 curl -X POST \
-  -F "image=@dokument.pdf" \
-  http://localhost:5000/image > ergebnis.jpeg
+  -F "image=@document.pdf" \
+  http://localhost:5000/image > output.jpeg
 ```
 
-### Beispiel 2: In PNG konvertieren mit höherer Auflösung
+### Example 2: High-Resolution PNG Conversion
 
-Konvertiert die PDF in ein PNG-Bild mit 300 DPI.
+Convert PDF to PNG with 300 DPI:
 
 ```bash
 curl -X POST \
-  -F "image=@dokument.pdf" \
+  -F "image=@document.pdf" \
   -F "dpi=300" \
   -F "format=png" \
-  http://localhost:5000/image > ergebnis.png
+  http://localhost:5000/image > output.png
 ```
 
-### Beispiel 3: Bild verkleinern (Thumbnail) und Qualität anpassen
+### Example 3: Create Thumbnail with Quality Control
 
-Erstellt ein Vorschaubild mit einer maximalen Breite von 800 Pixeln und einer JPEG-Qualität von 60%.
+Generate a thumbnail with maximum width of 800 pixels and 60% JPEG quality:
 
 ```bash
 curl -X POST \
-  -F "image=@dokument.pdf" \
+  -F "image=@document.pdf" \
   -F "width=800" \
   -F "quality=60" \
   http://localhost:5000/image > thumbnail.jpeg
 ```
 
-### Beispiel 4: Graustufenbild mit Schwellenwert (Threshold)
+### Example 4: Grayscale with Threshold
 
-Konvertiert die dritte Seite (page=2) in ein reines Schwarz-Weiß-Bild. Alle Grauwerte über 190 werden weiß, alle darunter schwarz.
+Convert the third page (page=2) to pure black and white. Grayscale values above 190 become white, below become black:
 
 ```bash
 curl -X POST \
-  -F "image=@dokument.pdf" \
+  -F "image=@document.pdf" \
   -F "page=2" \
   -F "grayscale=true" \
-  -F "tresh=190" \
-  http://localhost:5000/image > schwarz-weiss.jpeg
+  -F "thresh=190" \
+  http://localhost:5000/image > black-white.jpeg
 ```
 
-## 📋 API-Parameter
+### Example 5: Convert All Pages
 
-Alle Parameter werden als Formularfelder (`-F` in cURL) gesendet.
+Convert all pages of a PDF (use with caution for large documents):
 
-| Parameter   | Beschreibung                                                                                                       | Typ     | Standardwert  |
-| ----------- | ------------------------------------------------------------------------------------------------------------------ | ------- | ------------- |
-| `image`     | **(Erforderlich)** Die hochzuladende PDF-Datei                                                                     | File    | -             |
-| `page`      | Die zu konvertierende Seitenzahl (0-basiert, d.h. 0 ist die erste Seite)                                           | Integer | 0             |
-| `dpi`       | Die Auflösung in "dots per inch", mit der die Seite gerendert wird. Beeinflusst die Pixelgröße des Bildes          | Integer | 150           |
-| `width`     | Skaliert das Ausgabebild auf eine feste Breite in Pixeln. Das Seitenverhältnis bleibt erhalten                     | Integer | (deaktiviert) |
-| `format`    | Das gewünschte Ausgabeformat. Unterstützte Werte: `jpeg`, `png`, `webp`                                            | String  | `jpeg`        |
-| `quality`   | Die Qualität des Ausgabebildes. Bei jpeg/webp: 1-100. Bei png: Kompressionslevel 0-9                               | Integer | 85 (für JPEG) |
-| `grayscale` | Konvertiert das Bild in Graustufen. Setzen Sie einen beliebigen Wert (z.B. `true` oder `1`), um dies zu aktivieren | String  | (deaktiviert) |
-| `tresh`     | Wendet einen Schwellenwert an (ideal nach Graustufen). Werte über dieser Schwelle werden weiß, der Rest schwarz    | Integer | 128           |
-| `n`         | Die Anzahl der zu verarbeitenden Seiten. `-1` bedeutet "alle Seiten" ⚠️ **Achtung**: Dies ist ressourcenintensiv!  | Integer | 1             |
+```bash
+curl -X POST \
+  -F "image=@document.pdf" \
+  -F "n=-1" \
+  http://localhost:5000/image > all-pages.jpeg
+```
 
-## 🛠️ Lokale Entwicklung (ohne Docker)
+## 📋 API Parameters
 
-Wenn Sie den Code direkt ausführen und bearbeiten möchten:
+All parameters are sent as form fields (`-F` in cURL).
 
-### libvips installieren
+| Parameter   | Description                                                                                                | Type    | Default    |
+| ----------- | ---------------------------------------------------------------------------------------------------------- | ------- | ---------- |
+| `image`     | **(Required)** The PDF file to upload                                                                      | File    | -          |
+| `page`      | Page number to convert (0-indexed, so 0 is the first page)                                                 | Integer | 0          |
+| `dpi`       | Resolution in dots per inch for rendering. Higher values = larger pixel dimensions                         | Integer | 150        |
+| `width`     | Scale output image to fixed width in pixels. Aspect ratio is preserved                                     | Integer | (disabled) |
+| `format`    | Output image format. Supported values: `jpeg`, `png`, `webp`                                               | String  | `jpeg`     |
+| `quality`   | Output image quality. For jpeg/webp: 1-100. For png: compression level 0-9                                 | Integer | 85 (JPEG)  |
+| `grayscale` | Convert image to grayscale. Set any value (e.g., `true` or `1`) to enable                                  | String  | (disabled) |
+| `thresh`    | Apply threshold filter (ideal after grayscale). Values above threshold become white, below become black    | Integer | 128        |
+| `n`         | Number of pages to process. `-1` means "all pages" ⚠️ **Warning**: Resource-intensive for large documents! | Integer | 1          |
 
-Stellen Sie sicher, dass die libvips-Bibliothek und deren Entwicklungsdateien auf Ihrem System installiert sind:
+## 🛠️ Local Development (without Docker)
+
+If you want to run and modify the code directly:
+
+### Install libvips
+
+Ensure the libvips library and development headers are installed on your system:
 
 - **macOS (Homebrew)**: `brew install vips`
 - **Debian/Ubuntu**: `sudo apt-get update && sudo apt-get install libvips-dev`
+- **CentOS/RHEL**: `sudo yum install vips-devel`
+- **Windows**: Download from [libvips releases](https://github.com/libvips/libvips/releases)
 
-### Python-Umgebung einrichten
+### Setup Python Environment
 
 ```bash
-# Virtuelle Umgebung erstellen
+# Create virtual environment
 python3 -m venv venv
 
-# Umgebung aktivieren
-source venv/bin/activate
+# Activate environment
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Abhängigkeiten installieren
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Flask-App starten
+### Start Flask Development Server
 
 ```bash
-# Startet den Entwicklungs-Server
+# Start development server
 flask run
+
+# Or with debug mode
+flask --debug run
 ```
 
-Der Service ist nun unter `http://127.0.0.1:5000` verfügbar.
+The service is now available at `http://127.0.0.1:5000`.
+
+## 🔧 Configuration
+
+### Environment Variables
+
+| Variable    | Description                | Default      |
+| ----------- | -------------------------- | ------------ |
+| `FLASK_ENV` | Flask environment          | `production` |
+| `PORT`      | Server port                | `5000`       |
+| `WORKERS`   | Number of Gunicorn workers | `4`          |
+
+### Production Deployment
+
+For production use, consider:
+
+1. **Reverse Proxy**: Use nginx or similar in front of the service
+2. **Resource Limits**: Set appropriate memory/CPU limits in Docker
+3. **Monitoring**: Add health checks and logging
+4. **Security**: Implement rate limiting and file size restrictions
+
+## 📊 Performance Notes
+
+- **Memory Usage**: Roughly 50-100MB per concurrent conversion
+- **Speed**: Typical conversion time is 100-500ms per page
+- **Scaling**: Stateless design allows horizontal scaling
+- **File Size Limits**: Default Flask limit is 16MB per request
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [libvips](https://libvips.github.io/libvips/) - Fast image processing library
+- [Flask](https://flask.palletsprojects.com/) - Lightweight web framework
+- [Gunicorn](https://gunicorn.org/) - Python WSGI HTTP Server

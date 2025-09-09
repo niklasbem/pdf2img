@@ -8,7 +8,7 @@ MAX_DPI = 300
 
 @app.route("/")
 def hello():
-    return "Use /image endpoint. Parameters: page, dpi, grayscale, tresh, format (png/jpeg/webp), quality (1-100), width (in pixels)"
+    return "Use /image endpoint. Parameters: page, dpi, grayscale, thresh, format (png/jpeg/webp), quality (1-100), width (in pixels)"
 
 @app.route("/image", methods=['POST'])
 def image():
@@ -31,9 +31,9 @@ def image():
         # Bildverarbeitung
         if request.form.get('grayscale'):
             image = image.colourspace('b-w')
-        if request.form.get('tresh'):
-            tresh_value = request.form.get('tresh', default=128, type=int)
-            image = image.relational_const('more', tresh_value)
+        if request.form.get('thresh'):
+            thresh_value = request.form.get('thresh', default=128, type=int)
+            image = image.relational_const('more', thresh_value)
 
         # Bildgröße anpassen (falls 'width' angegeben)
         width = request.form.get('width', type=int)

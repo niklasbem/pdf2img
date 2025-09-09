@@ -5,7 +5,7 @@ LABEL author="Niklas Ben el Mekki" description="PDF to Image converter service"
 ENV PYTHONUNBUFFERED=1 \
     APP_HOME=/app \
     # Gunicorn-Settings
-    PORT=80 \
+    PORT=8080 \
     THREADS=4 \
     WORKERS=1 \
     TIMEOUT=300

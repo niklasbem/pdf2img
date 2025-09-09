@@ -32,19 +32,19 @@ docker build -t pdf-image-service .
 
 ### 2. Run Container
 
-Start a container from the built image. The service runs on port 5000 inside the container:
+Start a container from the built image. The service runs on port 8080 inside the container:
 
 ```bash
-docker run -d -p 5000:5000 --name pdf-converter pdf-image-service
+docker run -d -p 8080:8080 --name pdf-converter pdf-image-service
 ```
 
 **Flag explanations:**
 
 - `-d`: Run container in detached mode (background)
-- `-p 5000:5000`: Map host port 5000 to container port 5000
+- `-p 8080:8080`: Map host port 8080 to container port 8080
 - `--name pdf-converter`: Assign a memorable name to the container
 
-The service is now available at `http://localhost:5000`.
+The service is now available at `http://localhost:8080`.
 
 ## ⚙️ API Usage & Examples
 
@@ -62,7 +62,7 @@ Convert the first page of a PDF to JPEG with 150 DPI and 85% quality:
 ```bash
 curl -X POST \
   -F "image=@document.pdf" \
-  http://localhost:5000/image > output.jpeg
+  http://localhost:8080/image > output.jpeg
 ```
 
 ### Example 2: High-Resolution PNG Conversion
@@ -74,7 +74,7 @@ curl -X POST \
   -F "image=@document.pdf" \
   -F "dpi=300" \
   -F "format=png" \
-  http://localhost:5000/image > output.png
+  http://localhost:8080/image > output.png
 ```
 
 ### Example 3: Create Thumbnail with Quality Control
@@ -86,7 +86,7 @@ curl -X POST \
   -F "image=@document.pdf" \
   -F "width=800" \
   -F "quality=60" \
-  http://localhost:5000/image > thumbnail.jpeg
+  http://localhost:8080/image > thumbnail.jpeg
 ```
 
 ### Example 4: Grayscale with Threshold
@@ -99,7 +99,7 @@ curl -X POST \
   -F "page=2" \
   -F "grayscale=true" \
   -F "thresh=190" \
-  http://localhost:5000/image > black-white.jpeg
+  http://localhost:8080/image > black-white.jpeg
 ```
 
 ### Example 5: Convert All Pages (Traditional Method)
@@ -110,7 +110,7 @@ Convert all pages of a PDF (use with caution for large documents):
 curl -X POST \
   -F "image=@document.pdf" \
   -F "n=-1" \
-  http://localhost:5000/image > all-pages.jpeg
+  http://localhost:8080/image > all-pages.jpeg
 ```
 
 ### Example 6: Batch Convert All Pages ⚡ **NEW & RECOMMENDED**
@@ -122,7 +122,7 @@ curl -X POST \
   -F "image=@document.pdf" \
   -F "dpi=150" \
   -F "format=jpeg" \
-  http://localhost:5000/batch-images
+  http://localhost:8080/batch-images
 ```
 
 **Response Example:**
@@ -161,7 +161,7 @@ curl -X POST \
   -F "format=png" \
   -F "grayscale=true" \
   -F "width=1200" \
-  http://localhost:5000/batch-images
+  http://localhost:8080/batch-images
 ```
 
 ## 📋 API Parameters
@@ -236,7 +236,7 @@ flask run
 flask --debug run
 ```
 
-The service is now available at `http://127.0.0.1:5000`.
+The service is now available at `http://127.0.0.1:8080`.
 
 ## 🔧 Configuration
 
@@ -245,7 +245,7 @@ The service is now available at `http://127.0.0.1:5000`.
 | Variable    | Description                | Default      |
 | ----------- | -------------------------- | ------------ |
 | `FLASK_ENV` | Flask environment          | `production` |
-| `PORT`      | Server port                | `5000`       |
+| `PORT`      | Server port                | `8080`       |
 | `WORKERS`   | Number of Gunicorn workers | `4`          |
 
 ### Production Deployment

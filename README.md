@@ -15,7 +15,8 @@ This project is designed for easy deployment in a Docker container.
 - **🎛️ Flexible API**: Complete control over resolution (DPI), image size, output format, quality, and basic image filters
 - **🐳 Docker Ready**: Optimized multi-stage Dockerfile for fast builds and minimal image sizes
 - **🏭 Production Ready**: Runs with Gunicorn WSGI server, ready for deployment behind a reverse proxy
-- **📊 Multi-page Support**: Convert single pages or entire documents in one request
+- **📊 Multi-page Support**: Convert single pages or entire documents efficiently
+- **⚡ Batch Processing**: New batch endpoint for optimal multi-page conversion performance
 
 ## 🏁 Quick Start
 
@@ -47,7 +48,12 @@ The service is now available at `http://localhost:5000`.
 
 ## ⚙️ API Usage & Examples
 
-Send POST requests with `multipart/form-data` to the `/image` endpoint.
+The service provides two main endpoints:
+
+- **`/image`** - Convert single pages or all pages (returns image file)
+- **`/batch-images`** - Convert all pages efficiently (returns JSON with Base64 images) ⚡ **NEW**
+
+Send POST requests with `multipart/form-data` to either endpoint.
 
 ### Example 1: Basic Conversion (PDF to JPEG)
 
@@ -96,7 +102,7 @@ curl -X POST \
   http://localhost:5000/image > black-white.jpeg
 ```
 
-### Example 5: Convert All Pages
+### Example 5: Convert All Pages (Traditional Method)
 
 Convert all pages of a PDF (use with caution for large documents):
 
@@ -107,9 +113,62 @@ curl -X POST \
   http://localhost:5000/image > all-pages.jpeg
 ```
 
+### Example 6: Batch Convert All Pages ⚡ **NEW & RECOMMENDED**
+
+Efficiently convert all pages to separate images using the new batch endpoint:
+
+```bash
+curl -X POST \
+  -F "image=@document.pdf" \
+  -F "dpi=150" \
+  -F "format=jpeg" \
+  http://localhost:5000/batch-images
+```
+
+**Response Example:**
+
+```json
+{
+  "success": true,
+  "total_pages": 3,
+  "format": "jpeg",
+  "dpi": 150,
+  "images": [
+    {
+      "page": 1,
+      "data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ..."
+    },
+    {
+      "page": 2,
+      "data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ..."
+    },
+    {
+      "page": 3,
+      "data": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ..."
+    }
+  ]
+}
+```
+
+### Example 7: Batch Convert with Processing Options
+
+Convert all pages with grayscale and custom quality:
+
+```bash
+curl -X POST \
+  -F "image=@document.pdf" \
+  -F "dpi=200" \
+  -F "format=png" \
+  -F "grayscale=true" \
+  -F "width=1200" \
+  http://localhost:5000/batch-images
+```
+
 ## 📋 API Parameters
 
 All parameters are sent as form fields (`-F` in cURL).
+
+### `/image` Endpoint Parameters
 
 | Parameter   | Description                                                                                                | Type    | Default    |
 | ----------- | ---------------------------------------------------------------------------------------------------------- | ------- | ---------- |
@@ -122,6 +181,24 @@ All parameters are sent as form fields (`-F` in cURL).
 | `grayscale` | Convert image to grayscale. Set any value (e.g., `true` or `1`) to enable                                  | String  | (disabled) |
 | `thresh`    | Apply threshold filter (ideal after grayscale). Values above threshold become white, below become black    | Integer | 128        |
 | `n`         | Number of pages to process. `-1` means "all pages" ⚠️ **Warning**: Resource-intensive for large documents! | Integer | 1          |
+
+### `/batch-images` Endpoint Parameters ⚡ **NEW**
+
+| Parameter   | Description                                                                                             | Type    | Default    |
+| ----------- | ------------------------------------------------------------------------------------------------------- | ------- | ---------- |
+| `image`     | **(Required)** The PDF file to upload                                                                   | File    | -          |
+| `dpi`       | Resolution in dots per inch for rendering. Higher values = larger pixel dimensions                      | Integer | 150        |
+| `width`     | Scale output image to fixed width in pixels. Aspect ratio is preserved                                  | Integer | (disabled) |
+| `format`    | Output image format. Supported values: `jpeg`, `png`, `webp`                                            | String  | `jpeg`     |
+| `quality`   | Output image quality. For jpeg/webp: 1-100. For png: compression level 0-9                              | Integer | 85 (JPEG)  |
+| `grayscale` | Convert image to grayscale. Set any value (e.g., `true` or `1`) to enable                               | String  | (disabled) |
+| `thresh`    | Apply threshold filter (ideal after grayscale). Values above threshold become white, below become black | Integer | 128        |
+
+**Key Differences:**
+
+- `/batch-images` automatically processes **all pages** (no `page` or `n` parameter needed)
+- Returns **JSON with Base64-encoded images** instead of a single image file
+- **Much more efficient** for multi-page documents (single request vs. multiple requests)
 
 ## 🛠️ Local Development (without Docker)
 
@@ -186,6 +263,16 @@ For production use, consider:
 - **Speed**: Typical conversion time is 100-500ms per page
 - **Scaling**: Stateless design allows horizontal scaling
 - **File Size Limits**: Default Flask limit is 16MB per request
+
+### Performance Comparison: `/image` vs `/batch-images`
+
+| Metric                     | `/image` (per page)    | `/batch-images` (all pages) |
+| -------------------------- | ---------------------- | --------------------------- |
+| **Network Requests**       | N requests for N pages | 1 request for N pages       |
+| **HTTP Overhead**          | High (N × connection)  | Low (1 × connection)        |
+| **Server Processing**      | N × PDF parsing        | 1 × PDF parsing             |
+| **Recommended Use Case**   | Single pages, previews | Multi-page documents        |
+| **Large PDFs (50+ pages)** | ❌ Inefficient         | ✅ **Highly Recommended**   |
 
 ## 🤝 Contributing
 

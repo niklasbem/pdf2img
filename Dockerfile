@@ -5,15 +5,21 @@ LABEL author="Niklas Ben el Mekki" description="PDF to Image converter service"
 ENV PYTHONUNBUFFERED=1 \
     APP_HOME=/app \
     # Gunicorn-Settings
-    PORT=5000 \
+    PORT=80 \
     THREADS=4 \
     WORKERS=1 \
     TIMEOUT=300
 
 WORKDIR $APP_HOME
 
+
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        # WICHTIG: Build-Tools hinzufügen
+        build-essential \
+        python3-dev \
+        # Deine bisherigen Abhängigkeiten
         libvips42 \
         libpoppler-glib8 \
         pkg-config \
@@ -38,4 +44,4 @@ USER appuser
 
 EXPOSE $PORT
 
-CMD ["gunicorn", "--bind", "0.0.0.0:$PORT", "--threads", "$THREADS", "--workers", "$WORKERS", "--timeout", "$TIMEOUT", "app:app"]
+CMD gunicorn --bind 0.0.0.0:$PORT --threads $THREADS --workers $WORKERS --timeout $TIMEOUT app:app

@@ -4,7 +4,7 @@ A high-performance, lightweight microservice for converting PDF documents to var
 
 This project is designed for easy deployment in a Docker container.
 
-[![Docker Ready](https://img.shields.io/badge/docker-ready-blue.svg)](https://docker.com)
+[![Docker Ready](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/niklasbem/pdf2img/tags)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://python.org)
 [![libvips](https://img.shields.io/badge/powered%20by-libvips-green.svg)](https://libvips.github.io/libvips/)
 
